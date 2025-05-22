@@ -321,7 +321,7 @@
           // Configuration từ parent window
           let config = {
               apiUrl: 'api/v1/cyhome/invoke',
-              platformUserId: '1234',
+              platformUserId: '', // Will be filled by parent window
               title: 'CyHome'
           };
 
@@ -519,6 +519,20 @@
     window.addEventListener("message", function (event) {
       if (event.data && event.data.type === "CLOSE_CHAT") {
         toggleChat()
+      }
+
+      if (event.data && event.data.type === "IFRAME_READY") {
+        iframe.contentWindow.postMessage(
+          {
+            type: "CONFIG",
+            config: {
+              platformUserId: config.platformUserId,
+              title: config.title,
+              apiUrl: config.apiUrl,
+            },
+          },
+          "*"
+        )
       }
     })
   }
