@@ -1,5 +1,5 @@
 // CyHome Chat Widget - Simple Embed Script
-(function() {
+;(function () {
   // Default configuration
   const config = {
     apiUrl: "https://cyhome.tadajapan.com/api/v1/cyhome/invoke",
@@ -7,13 +7,13 @@
     logoText: "ZZ",
     autoOpen: false,
     hideButton: false,
-    ...window.cyhomeConfig
-  };
+    ...window.cyhomeConfig,
+  }
 
   // Create the chat button and widget container
   function createChatWidget() {
     // Add styles
-    const style = document.createElement('style');
+    const style = document.createElement("style")
     style.textContent = `
       .cy-chat-button {
         position: fixed;
@@ -63,52 +63,52 @@
           height: calc(100% - 120px);
         }
       }
-    `;
-    document.head.appendChild(style);
+    `
+    document.head.appendChild(style)
 
     // Create chat button
     if (!config.hideButton) {
-      const button = document.createElement('button');
-      button.className = 'cy-chat-button';
-      button.textContent = config.logoText;
-      button.onclick = toggleChat;
-      document.body.appendChild(button);
+      const button = document.createElement("button")
+      button.className = "cy-chat-button"
+      button.textContent = config.logoText
+      button.onclick = toggleChat
+      document.body.appendChild(button)
     }
 
     // Create chat widget container
-    const widget = document.createElement('div');
-    widget.className = 'cy-chat-widget';
-    
-    // Create iframe
-    const iframe = document.createElement('iframe');
-    iframe.className = 'cy-chat-iframe';
-    widget.appendChild(iframe);
-    document.body.appendChild(widget);
+    const widget = document.createElement("div")
+    widget.className = "cy-chat-widget"
 
-    return { widget, iframe };
+    // Create iframe
+    const iframe = document.createElement("iframe")
+    iframe.className = "cy-chat-iframe"
+    widget.appendChild(iframe)
+    document.body.appendChild(widget)
+
+    return { widget, iframe }
   }
 
   // Toggle chat visibility
   function toggleChat() {
-    const widget = document.querySelector('.cy-chat-widget');
-    const iframe = document.querySelector('.cy-chat-iframe');
-    
-    if (widget.style.display === 'block') {
-      widget.style.display = 'none';
+    const widget = document.querySelector(".cy-chat-widget")
+    const iframe = document.querySelector(".cy-chat-iframe")
+
+    if (widget.style.display === "block") {
+      widget.style.display = "none"
     } else {
-      widget.style.display = 'block';
-      
+      widget.style.display = "block"
+
       // Set iframe content if not already set
-      if (!iframe.src || iframe.src === 'about:blank') {
-        loadChatInterface(iframe);
+      if (!iframe.src || iframe.src === "about:blank") {
+        loadChatInterface(iframe)
       }
     }
   }
 
   // Load chat interface
   function loadChatInterface(iframe) {
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open();
+    const doc = iframe.contentDocument || iframe.contentWindow.document
+    doc.open()
     doc.write(`
       <!DOCTYPE html>
       <html lang="vi">
@@ -218,6 +218,38 @@
             outline: none;
             font-size: 15px;
             resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            overflow-y: auto;
+          }
+          .typing-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #6b7280;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 10px;
+          }
+          .typing-dots {
+            display: flex;
+            margin-left: 8px;
+          }
+          .typing-dots span {
+            width: 4px;
+            height: 4px;
+            background: #6b7280;
+            border-radius: 50%;
+            margin: 0 1px;
+            animation: typing-dot 1.4s infinite ease-in-out;
+          }
+          .typing-dots span:nth-child(1) { animation-delay: 0s; }
+          .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+          .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+          @keyframes typing-dot {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
           }
           .send-btn {
             width: 48px;
@@ -238,7 +270,7 @@
           <div class="header-content">
             <div class="logo">${config.logoText}</div>
             <div class="header-text">
-              <h3>${config.title}</h3>
+              <h3 id="chat-title">${config.title}</h3>
             </div>
           </div>
           <button class="close-btn" onclick="closeChat()">&times;</button>
@@ -263,77 +295,228 @@
         </div>
         
         <script>
-          // Basic chat functionality
+          // Configuration từ parent window
+          let config = {
+              apiUrl: 'api/v1/cyhome/invoke',
+              platformUserId: '1234',
+              title: 'CyHome'
+          };
+
+          // Lắng nghe config từ parent
+          window.addEventListener('message', function(event) {
+              if (event.data.type === 'CONFIG') {
+                  config = Object.assign({}, config, event.data.config);
+                  updateUI();
+              }
+          });
+
+          function updateUI() {
+              if (config.title) {
+                  document.getElementById('chat-title').textContent = config.title;
+              }
+          }
+
           function closeChat() {
-            parent.postMessage({type: 'CLOSE_CHAT'}, '*');
+              // Gửi message tới parent window
+              if (window.parent !== window) {
+                  window.parent.postMessage({
+                      type: 'CLOSE_CHAT',
+                      source: 'cyhome-chat-widget'
+                  }, '*');
+              }
           }
-          
+
           function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (!message) return;
-            
-            // Add user message
-            addMessage(message, 'user');
-            input.value = '';
-            
-            // Simple bot response (in a real app, this would call your API)
-            setTimeout(() => {
-              addMessage("Cảm ơn bạn đã liên hệ với CyHome. Đây là phiên bản demo.", 'bot');
-            }, 1000);
+              const input = document.getElementById('messageInput');
+              const message = input.value.trim();
+
+              if (!message) return;
+
+              // Hiển thị tin nhắn user
+              addMessage(message, 'user');
+              input.value = '';
+
+              // Hiển thị typing indicator
+              showTyping();
+
+              // Xử lý tin nhắn
+              processMessage(message);
           }
-          
+
           function addMessage(text, sender) {
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ' + sender;
-            
-            const bubbleDiv = document.createElement('div');
-            bubbleDiv.className = 'message-bubble';
-            bubbleDiv.textContent = text;
-            
-            messageDiv.appendChild(bubbleDiv);
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+              const messagesContainer = document.getElementById('chatMessages');
+              const messageDiv = document.createElement('div');
+              messageDiv.className = 'message ' + sender;
+
+              const bubbleDiv = document.createElement('div');
+              bubbleDiv.className = 'message-bubble';
+              bubbleDiv.textContent = text;
+
+              messageDiv.appendChild(bubbleDiv);
+              messagesContainer.appendChild(messageDiv);
+
+              // Scroll to bottom
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
           }
-          
+
+          function showTyping() {
+              const messagesContainer = document.getElementById('chatMessages');
+              const typingDiv = document.createElement('div');
+              typingDiv.id = 'typing-indicator';
+              typingDiv.className = 'message bot';
+
+              typingDiv.innerHTML = 
+                  '<div class="typing-indicator">' +
+                      'Đang trả lời' +
+                      '<div class="typing-dots">' +
+                          '<span></span>' +
+                          '<span></span>' +
+                          '<span></span>' +
+                      '</div>' +
+                  '</div>';
+
+              messagesContainer.appendChild(typingDiv);
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }
+
+          function hideTyping() {
+              const typing = document.getElementById('typing-indicator');
+              if (typing) {
+                  typing.remove();
+              }
+          }
+
+          async function processMessage(message) {
+              try {
+                  // Gọi API CyHome
+                  const response = await callCyHomeAPI(message);
+
+                  hideTyping();
+                  addMessage(response, 'bot');
+
+                  // Gửi event tới parent
+                  if (window.parent !== window) {
+                      window.parent.postMessage({
+                          type: 'MESSAGE_SENT',
+                          data: { userMessage: message, botResponse: response },
+                          source: 'cyhome-chat-widget'
+                      }, '*');
+                  }
+              } catch (error) {
+                  hideTyping();
+                  addMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.', 'bot');
+                  console.error('Error processing message:', error);
+              }
+          }
+
+          async function callCyHomeAPI(message) {
+              try {
+                  const apiUrl = config.apiUrl.startsWith('http') ? 
+                      config.apiUrl : 
+                      'https://cyhome.tadajapan.com/api/v1/cyhome/invoke';
+
+                  const response = await fetch(apiUrl, {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                          message: message,
+                          platform_user_id: config.platformUserId || generateUserId()
+                      })
+                  });
+
+                  if (!response.ok) {
+                      throw new Error('HTTP error! status: ' + response.status);
+                  }
+
+                  const data = await response.json();
+
+                  // Parse response theo format của API
+                  if (data.status === 200 && data.data && data.data.agent_reply) {
+                      return data.data.agent_reply;
+                  } else if (data.message === 'Success' && data.data && data.data.agent_reply) {
+                      return data.data.agent_reply;
+                  } else {
+                      throw new Error('Invalid API response format');
+                  }
+              } catch (error) {
+                  console.error('API call failed:', error);
+                  // Fallback response
+                  return 'Xin lỗi, tôi không thể kết nối đến server. Vui lòng thử lại sau.';
+              }
+          }
+
+          function generateUserId() {
+              // Tạo user ID duy nhất nếu không được cung cấp
+              let userId = localStorage.getItem('cyhome_user_id');
+              if (!userId) {
+                  userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                  localStorage.setItem('cyhome_user_id', userId);
+              }
+              return userId;
+          }
+
           function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              sendMessage();
-            }
+              if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  sendMessage();
+              }
           }
+
+          function handleFileUpload() {
+              // Implement file upload functionality
+              alert('Tính năng upload file sẽ được cập nhật sớm!');
+          }
+
+          // Auto resize input
+          const messageInput = document.getElementById('messageInput');
+          messageInput.addEventListener('input', function() {
+              this.style.height = 'auto';
+              this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+          });
+
+          // Notify parent that iframe is ready
+          window.addEventListener('load', function() {
+              if (window.parent !== window) {
+                  window.parent.postMessage({
+                      type: 'IFRAME_READY',
+                      source: 'cyhome-chat-widget'
+                  }, '*');
+              }
+          });
+        
         </script>
       </body>
       </html>
-    `);
-    doc.close();
-    
+    `)
+    doc.close()
+
     // Listen for messages from iframe
-    window.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'CLOSE_CHAT') {
-        toggleChat();
+    window.addEventListener("message", function (event) {
+      if (event.data && event.data.type === "CLOSE_CHAT") {
+        toggleChat()
       }
-    });
+    })
   }
 
   // Initialize when DOM is ready
   function init() {
-    const { widget, iframe } = createChatWidget();
-    
+    const { widget, iframe } = createChatWidget()
+
     // Auto open if configured
     if (config.autoOpen) {
       setTimeout(() => {
-        widget.style.display = 'block';
-        loadChatInterface(iframe);
-      }, 1000);
+        widget.style.display = "block"
+        loadChatInterface(iframe)
+      }, 1000)
     }
   }
 
   // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init)
   } else {
-    init();
+    init()
   }
-})();
+})()
