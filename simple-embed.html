@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CyHome Chat Widget - Simple Embed</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+        color: #1f2937;
+        line-height: 1.5;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        opacity: 0.9;
+        font-size: 16px;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .code-section {
+        margin: 30px 0;
+      }
+
+      .code-section h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        border-bottom: 2px solid #f1f1f1;
+        padding-bottom: 10px;
+      }
+
+      .code-container {
+        position: relative;
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 20px;
+        border-radius: 8px;
+        overflow: auto;
+        font-family: "Courier New", Courier, monospace;
+        line-height: 1.5;
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 15px 0;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+      }
+
+      .instruction {
+        background: #f1f5f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      .instruction h3 {
+        margin-bottom: 10px;
+        color: #4f46e5;
+      }
+
+      .instruction ol {
+        margin-left: 20px;
+      }
+
+      .instruction li {
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>CyHome Chat Widget</h1>
+        <p>Thêm trợ lý ảo CyHome vào website của bạn</p>
+      </div>
+
+      <div class="content">
+        <div class="instruction">
+          <h3>Hướng dẫn:</h3>
+          <p>Thêm đoạn mã sau vào website của bạn, ngay trước thẻ đóng <code>&lt;/body&gt;</code>:</p>
+        </div>
+
+        <div class="code-section">
+          <div class="code-container">
+            <button id="copyBtn" class="copy-btn">Copy</button>
+            <pre id="embedCode">&lt;script defer src="https://your-domain.com/simple-embed.js"&gt;&lt;/script&gt;</pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <h2>Tùy chọn cấu hình</h2>
+          <p>Bạn có thể tùy chỉnh widget bằng cách thêm đoạn mã cấu hình trước script:</p>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="autoOpenCheck" />
+            <label for="autoOpenCheck">Tự động mở chat khi tải trang</label>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="hideButtonCheck" />
+            <label for="hideButtonCheck">Ẩn nút chat (điều khiển bằng code)</label>
+          </div>
+
+          <div class="code-container" style="margin-top: 20px">
+            <button id="copyConfigBtn" class="copy-btn">Copy</button>
+            <pre id="configCode">
+&lt;script&gt;
+window.cyhomeConfig = {
+  title: "CyHome",
+  logoText: "ZZ",
+  autoOpen: false,
+  hideButton: false
+};
+&lt;/script&gt;</pre
+            >
+          </div>
+        </div>
+
+        <div class="instruction">
+          <h3>Điều khiển chat bằng JavaScript:</h3>
+          <p>Nếu bạn ẩn nút chat, bạn có thể điều khiển widget bằng JavaScript:</p>
+          <pre>
+// Mở chat
+window.maiChat.open();
+
+// Đóng chat
+window.maiChat.close();
+
+// Chuyển đổi trạng thái (đóng/mở)
+window.maiChat.toggle();</pre
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- CyHome Chat Widget -->
+    <script>
+      window.cyhomeConfig = {
+        title: "CyHome",
+        logoText: "ZZ",
+      }
+    </script>
+    <script defer src="simple-embed.js"></script>
+
+    <script>
+      // Copy buttons functionality
+      document.getElementById("copyBtn").addEventListener("click", function () {
+        const code = document.getElementById("embedCode").textContent
+        navigator.clipboard.writeText(code)
+        this.textContent = "Copied!"
+        setTimeout(() => {
+          this.textContent = "Copy"
+        }, 2000)
+      })
+
+      document.getElementById("copyConfigBtn").addEventListener("click", function () {
+        const code = document.getElementById("configCode").textContent
+        navigator.clipboard.writeText(code)
+        this.textContent = "Copied!"
+        setTimeout(() => {
+          this.textContent = "Copy"
+        }, 2000)
+      })
+
+      // Update config code based on checkboxes
+      function updateConfigCode() {
+        var autoOpen = document.getElementById("autoOpenCheck").checked
+        var hideButton = document.getElementById("hideButtonCheck").checked
+
+        var lines = []
+        lines.push("<script>")
+        lines.push("window.cyhomeConfig = {")
+        lines.push('  title: "CyHome",')
+        lines.push('  logoText: "ZZ"')
+
+        if (autoOpen) {
+          // Add trailing comma to previous line
+          var lastIndex = lines.length - 1
+          lines[lastIndex] = lines[lastIndex] + ","
+          lines.push("  autoOpen: true")
+        }
+
+        if (hideButton) {
+          // Add trailing comma to previous line
+          var lastIndex = lines.length - 1
+          lines[lastIndex] = lines[lastIndex] + ","
+          lines.push("  hideButton: true")
+        }
+
+        lines.push("};")
+        lines.push("<\/script>")
+
+        document.getElementById("configCode").textContent = lines.join("\n")
+      }
+
+      // Initialize with default config
+      updateConfigCode()
+
+      document.getElementById("autoOpenCheck").addEventListener("change", updateConfigCode)
+      document.getElementById("hideButtonCheck").addEventListener("change", updateConfigCode)
+    </script>
+  </body>
+</html>
