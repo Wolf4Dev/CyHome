@@ -1,12 +1,35 @@
 // CyHome Chat Widget - Simple Embed Script
 ;(function () {
+  // Get platformUserId from script tag data attribute
+  function getPlatformUserId() {
+    const scripts = document.getElementsByTagName("script")
+    let platformUserId = null
+
+    // Find the current script and check for data-platform-user-id attribute
+    for (let i = 0; i < scripts.length; i++) {
+      const script = scripts[i]
+      if (script.src && (script.src.includes("embed.js") || script.src.includes("simple-embed.js"))) {
+        platformUserId = script.getAttribute("data-platform-user-id")
+        break
+      }
+    }
+
+    return platformUserId || generateRandomUserId()
+  }
+
+  // Generate a random user ID if not provided
+  function generateRandomUserId() {
+    return "user_" + Math.random().toString(36).substr(2, 9) + "_" + Date.now()
+  }
+
   // Default configuration
   const config = {
     apiUrl: "https://cyhome.tadajapan.com/api/v1/cyhome/invoke",
     title: "CyHome",
-    logoText: "ZZ",
+    logoText: "RS",
     autoOpen: false,
     hideButton: false,
+    platformUserId: getPlatformUserId(),
     ...window.cyhomeConfig,
   }
 
@@ -422,7 +445,7 @@
                       },
                       body: JSON.stringify({
                           message: message,
-                          platform_user_id: config.platformUserId || generateUserId()
+                          platform_user_id: config.platformUserId
                       })
                   });
 
