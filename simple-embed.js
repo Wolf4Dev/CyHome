@@ -1,5 +1,13 @@
 // CyHome Chat Widget - Simple Embed Script
 ;(function () {
+  // Create global CyhomeWebSDK object
+  window.CyhomeWebSDK = {
+    WebChatClient: initChatClient,
+  }
+
+  // Stores the widget instance
+  let widgetInstance = null
+
   // Get platformUserId from script tag data attribute
   function getPlatformUserId() {
     const scripts = document.getElementsByTagName("script")
@@ -23,15 +31,24 @@
   }
 
   // Default configuration
-  const config = {
+  const defaultConfig = {
     apiUrl: "https://cyhome.tadajapan.com/api/v1/cyhome/invoke",
     title: "CyHome",
     logoText: "RS",
     autoOpen: false,
     hideButton: false,
     platformUserId: getPlatformUserId(),
-    ...window.cyhomeConfig,
+    language: "vi",
+    icon: "https://play-lh.googleusercontent.com/uRB5JlZPQclneorj-nj7yr9cv33n8_-Ore7ehkYLz9Qpd2wAaO48npJS67FBmL1kawpW=w480-h960-rw",
+    userInfo: {
+      id: "user",
+      url: "https://cdn-icons-png.flaticon.com/512/7891/7891470.png",
+      nickname: "Khách hàng",
+    },
   }
+
+  // Combined config that will be used by the widget
+  let config = {}
 
   // Create the chat button and widget container
   function createChatWidget() {
@@ -130,6 +147,7 @@
 
   // Load chat interface
   function loadChatInterface(iframe) {
+    // Use the combined config object
     const doc = iframe.contentDocument || iframe.contentWindow.document
     doc.open()
     doc.write(`
@@ -146,6 +164,19 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+          }
+          .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-left: 8px;
+            margin-right: 8px;
+          }
+          .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
           .chat-header {
             background: white;
@@ -291,9 +322,19 @@
       <body>
         <div class="chat-header">
           <div class="header-content">
-            <div class="logo">${config.logoText}</div>
+            <div class="logo" id="chat-logo">
+              <img src="${
+                config.icon || (config.ui && config.ui.base && config.ui.base.icon) || ""
+              }" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.onerror=null; this.parentNode.textContent='${
+      config.logoText
+    }'"/>
+            </div>
             <div class="header-text">
-              <h3 id="chat-title">${config.title}</h3>
+              <h3 id="chat-title">${
+                (config.ui && config.ui.chatBot && config.ui.chatBot.title) ||
+                (config.componentProps && config.componentProps.title) ||
+                config.title
+              }</h3>
             </div>
           </div>
           <button class="close-btn" onclick="closeChat()">&times;</button>
@@ -322,7 +363,12 @@
           let config = {
               apiUrl: 'api/v1/cyhome/invoke',
               platformUserId: '', // Will be filled by parent window
-              title: 'CyHome'
+              title: 'CyHome',
+              userInfo: {
+                  id: 'user',
+                  url: 'https://cdn-icons-png.flaticon.com/512/7891/7891470.png',
+                  nickname: 'Khách hàng'
+              }
           };
 
           // Lắng nghe config từ parent
@@ -334,8 +380,22 @@
           });
 
           function updateUI() {
-              if (config.title) {
-                  document.getElementById('chat-title').textContent = config.title;
+              if (config.title || (config.ui && config.ui.chatBot && config.ui.chatBot.title) || (config.componentProps && config.componentProps.title)) {
+                  document.getElementById('chat-title').textContent = 
+                    (config.ui && config.ui.chatBot && config.ui.chatBot.title) || 
+                    (config.componentProps && config.componentProps.title) || 
+                    config.title;
+              }
+              
+              // Update logo/icon if provided
+              if (config.icon || (config.ui && config.ui.base && config.ui.base.icon)) {
+                  const logoElement = document.getElementById('chat-logo');
+                  if (logoElement) {
+                      const img = logoElement.querySelector('img');
+                      if (img) {
+                          img.src = (config.ui && config.ui.base && config.ui.base.icon) || config.icon;
+                      }
+                  }
               }
           }
 
@@ -355,8 +415,8 @@
 
               if (!message) return;
 
-              // Hiển thị tin nhắn user
-              addMessage(message, 'user');
+              // Hiển thị tin nhắn user với thông tin user từ config
+              addMessage(message, 'user', config.userInfo);
               input.value = '';
 
               // Hiển thị typing indicator
@@ -366,10 +426,17 @@
               processMessage(message);
           }
 
-          function addMessage(text, sender) {
+          function addMessage(text, sender, userInfo) {
               const messagesContainer = document.getElementById('chatMessages');
               const messageDiv = document.createElement('div');
               messageDiv.className = 'message ' + sender;
+              
+              // Add user avatar if configured and it's a user message
+              if (sender === 'user' && userInfo && userInfo.url) {
+                  const avatarDiv = document.createElement('div');
+                  avatarDiv.className = 'user-avatar';
+                  messageDiv.appendChild(avatarDiv);
+              }
 
               const bubbleDiv = document.createElement('div');
               bubbleDiv.className = 'message-bubble';
@@ -445,7 +512,7 @@
                       },
                       body: JSON.stringify({
                           message: message,
-                          platform_user_id: config.platformUserId
+                          platform_user_id: config.platformUserId || (config.config && config.config.platform_user_id)
                       })
                   });
 
@@ -526,9 +593,13 @@
           {
             type: "CONFIG",
             config: {
-              platformUserId: config.platformUserId,
+              platformUserId: config.platformUserId || (config.config && config.config.platform_user_id),
               title: config.title,
               apiUrl: config.apiUrl,
+              icon: config.icon || (config.ui && config.ui.base && config.ui.base.icon),
+              userInfo: config.userInfo,
+              componentProps: config.componentProps,
+              ui: config.ui,
             },
           },
           "*"
@@ -537,16 +608,46 @@
     })
   }
 
+  // Main function to initialize the chat client with configuration
+  function initChatClient(clientConfig = {}) {
+    // Merge configurations
+    config = {
+      ...defaultConfig,
+      ...clientConfig,
+    }
+
+    // Support for platform_user_id in config.config
+    if (clientConfig.config && clientConfig.config.platform_user_id) {
+      config.platformUserId = clientConfig.config.platform_user_id
+    }
+
+    // Create widget if not already created
+    if (!widgetInstance) {
+      const { widget, iframe } = createChatWidget()
+      widgetInstance = { widget, iframe }
+
+      // Auto open if configured
+      if (config.autoOpen) {
+        setTimeout(() => {
+          widget.style.display = "block"
+          loadChatInterface(iframe)
+        }, 1000)
+      }
+    }
+
+    return widgetInstance
+  }
+
   // Initialize when DOM is ready
   function init() {
-    const { widget, iframe } = createChatWidget()
-
-    // Auto open if configured
-    if (config.autoOpen) {
-      setTimeout(() => {
-        widget.style.display = "block"
-        loadChatInterface(iframe)
-      }, 1000)
+    // If not already initialized with CyhomeWebSDK, initialize with default/window config
+    if (!widgetInstance) {
+      initChatClient({
+        config: {
+          platform_user_id: getPlatformUserId(),
+        },
+        ...window.cyhomeConfig,
+      })
     }
   }
 
