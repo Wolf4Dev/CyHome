@@ -165,19 +165,6 @@
             display: flex;
             flex-direction: column;
           }
-          .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-left: 8px;
-            margin-right: 8px;
-          }
-          .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
           .chat-header {
             background: white;
             padding: 16px;
@@ -431,13 +418,6 @@
               const messageDiv = document.createElement('div');
               messageDiv.className = 'message ' + sender;
               
-              // Add user avatar if configured and it's a user message
-              if (sender === 'user' && userInfo && userInfo.url) {
-                  const avatarDiv = document.createElement('div');
-                  avatarDiv.className = 'user-avatar';
-                  messageDiv.appendChild(avatarDiv);
-              }
-
               const bubbleDiv = document.createElement('div');
               bubbleDiv.className = 'message-bubble';
               bubbleDiv.textContent = text;
