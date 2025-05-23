@@ -32,7 +32,7 @@
 
   // Default configuration
   const defaultConfig = {
-    apiUrl: "https://cyhome.tadajapan.com/api/v1/cyhome/invoke",
+    apiUrl: "https://cyhome.rockship.xyz/api/v1/cyhome/invoke",
     title: "CyHome",
     logoText: "RS",
     autoOpen: false,
@@ -503,7 +503,7 @@
               try {
                   const apiUrl = config.apiUrl.startsWith('http') ? 
                       config.apiUrl : 
-                      'https://cyhome.tadajapan.com/api/v1/cyhome/invoke';
+                      'https://cyhome.rockship.xyz/api/v1/cyhome/invoke';
 
                   const response = await fetch(apiUrl, {
                       method: 'POST',
