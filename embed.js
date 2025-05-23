@@ -213,6 +213,7 @@
             border-radius: 18px;
             color: #374151;
             line-height: 1.5;
+            margin-bottom: 16px;
           }
           .message {
             display: flex;
