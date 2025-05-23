@@ -237,6 +237,70 @@
             border: 1px solid #e5e7eb;
             border-bottom-left-radius: 4px;
           }
+          
+          /* Markdown styles */
+          .message.bot .message-bubble p {
+            margin-bottom: 10px;
+          }
+          .message.bot .message-bubble p:last-child {
+            margin-bottom: 0;
+          }
+          .message.bot .message-bubble h1,
+          .message.bot .message-bubble h2,
+          .message.bot .message-bubble h3,
+          .message.bot .message-bubble h4,
+          .message.bot .message-bubble h5,
+          .message.bot .message-bubble h6 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+          }
+          .message.bot .message-bubble h1 { font-size: 1.5em; }
+          .message.bot .message-bubble h2 { font-size: 1.3em; }
+          .message.bot .message-bubble h3 { font-size: 1.1em; }
+          .message.bot .message-bubble ul, 
+          .message.bot .message-bubble ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+          }
+          .message.bot .message-bubble li {
+            margin-bottom: 4px;
+          }
+          .message.bot .message-bubble code {
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+          }
+          .message.bot .message-bubble pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+          }
+          .message.bot .message-bubble a {
+            color: #3b82f6;
+            text-decoration: underline;
+          }
+          .message.bot .message-bubble blockquote {
+            border-left: 3px solid #d1d5db;
+            padding-left: 10px;
+            margin-left: 10px;
+            color: #6b7280;
+          }
+          .message.bot .message-bubble table {
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            width: 100%;
+          }
+          .message.bot .message-bubble th,
+          .message.bot .message-bubble td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+          }
           .message.user .message-bubble {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -306,6 +370,16 @@
             justify-content: center;
           }
         </style>
+        <!-- Include marked.js for markdown parsing -->
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script>
+          // Configure marked options
+          marked.setOptions({
+            breaks: true,  // Enable GitHub Flavored Markdown line breaks
+            gfm: true,     // Enable GitHub Flavored Markdown
+            sanitize: false // Allow HTML in the markdown
+          });
+        </script>
       </head>
       <body>
         <div class="chat-header">
@@ -421,7 +495,15 @@
               
               const bubbleDiv = document.createElement('div');
               bubbleDiv.className = 'message-bubble';
-              bubbleDiv.textContent = text;
+              
+              // Apply markdown parsing only for bot messages
+              if (sender === 'bot') {
+                  // Parse markdown in bot responses
+                  bubbleDiv.innerHTML = marked.parse(text);
+              } else {
+                  // Keep user messages as plain text
+                  bubbleDiv.textContent = text;
+              }
 
               messageDiv.appendChild(bubbleDiv);
               messagesContainer.appendChild(messageDiv);
