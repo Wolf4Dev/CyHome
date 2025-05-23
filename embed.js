@@ -237,22 +237,6 @@
             border: 1px solid #e5e7eb;
             border-bottom-left-radius: 4px;
           }
-          
-          /* Styling for formatted text */
-          .message-bubble a {
-            color: #667eea;
-            text-decoration: underline;
-          }
-          
-          .message-bubble strong {
-            font-weight: bold;
-          }
-          
-          .message-bubble br {
-            margin-bottom: 6px;
-            display: block;
-            content: "";
-          }
           .message.user .message-bubble {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -437,50 +421,13 @@
               
               const bubbleDiv = document.createElement('div');
               bubbleDiv.className = 'message-bubble';
-              
-              // Format text to support markdown-like syntax
-              if (sender === 'bot') {
-                  // Process markdown-like formatting for bot messages
-                  const formattedText = formatMessageText(text);
-                  bubbleDiv.innerHTML = formattedText;
-              } else {
-                  // Keep user messages as plain text
-                  bubbleDiv.textContent = text;
-              }
+              bubbleDiv.textContent = text;
 
               messageDiv.appendChild(bubbleDiv);
               messagesContainer.appendChild(messageDiv);
 
               // Scroll to bottom
               messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          }
-          
-          function formatMessageText(text) {
-              if (!text) return '';
-              
-              // Security: Escape HTML to prevent XSS
-              let safeText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-              
-              // Process formatting
-              // 1. Bold text: **text** or __text__
-              safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-              safeText = safeText.replace(/__(.*?)__/g, '<strong>$1</strong>');
-              
-              // 2. Links: [text](url)
-              safeText = safeText.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-              
-              // 3. Line breaks: Convert \n to <br>
-              safeText = safeText.replace(/\n/g, '<br>');
-              
-              // 4. Bullet points: Lines starting with - or *
-              safeText = safeText.replace(/(<br>|^)(\s*)-(\s+)(.*?)(?=<br>|$)/g, '$1$2• $4');
-              safeText = safeText.replace(/(<br>|^)(\s*)\*(\s+)(.*?)(?=<br>|$)/g, '$1$2• $4');
-              
-              // 5. Numbered lists: Lines starting with 1., 2., etc.
-              // This is more complex, we'd need to track numbers, but for simplicity we'll just style them
-              safeText = safeText.replace(/(<br>|^)(\s*)(\d+\.)(\s+)(.*?)(?=<br>|$)/g, '$1$2<span style="font-weight: bold;">$3</span>$4$5');
-              
-              return safeText;
           }
 
           function showTyping() {
